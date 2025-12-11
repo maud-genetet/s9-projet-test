@@ -1,0 +1,65 @@
+@startuml
+
+skinparam packageStyle rectangle
+skinparam interfaceStyle strict
+
+title Architecture de Agence Voyage
+
+package "Service Layer" {
+
+    class JourneyProvider {
+        + List<Transport> findJourneys(cityFrom, cityTo, date, transportType, )
+    }
+
+    interface ITransportProvider {
+        ' + List<Transport> findJourneys(criteria)
+    }
+
+    class TransportProvider {
+        ' + List<Transport> findJourneys(criteria)
+    }
+
+    class Transport {
+        - String cityFrom
+        - String cityTo
+        - Date travelDate
+        - Time departureTime
+        - Time arrivalTime
+        - TransportType transportType
+    }
+
+    
+
+    interface IHotelProvider {
+        + Hotel findHotel(city, rating, cheapestPriority)
+        - List<Hotel> findByRating(city, minRating)
+        - Hotel getCheapestHotel(list, rating)
+        - Hotel getHigherRatedHotel(list)
+    }
+
+    class HotelProvider {
+        - String CSV_PATH
+        + List<Hotel> findHotel(city, rating, cheapestPriority)
+        - List<Hotel> findByRating(city, minRating)
+        - List<Hotel> getCheapestHotel(hotelList, rating)
+        - List<Hotel> getHigherRatedHotel(hotelList)
+    }
+
+    class Hotel {
+        - String city
+        - Address address
+        - double rating
+        - double pricePerNight
+    }
+
+
+
+    interface ActivityProvider {
+        + List<Activity> findActivities(criteria)
+    }
+}
+
+' Relations
+IHotelProvider <|.. HotelProvider
+
+@enduml
