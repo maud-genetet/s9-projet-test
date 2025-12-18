@@ -5,61 +5,315 @@ skinparam interfaceStyle strict
 
 title Architecture de Agence Voyage
 
-package "Service Layer" {
-
-    class JourneyProvider {
-        + List<Transport> findJourneys(cityFrom, cityTo, date, transportType, )
-    }
-
-    interface ITransportProvider {
-        ' + List<Transport> findJourneys(criteria)
-    }
-
-    class TransportProvider {
-        ' + List<Transport> findJourneys(criteria)
-    }
-
-    class Transport {
-        - String cityFrom
-        - String cityTo
-        - Date travelDate
-        - Time departureTime
-        - Time arrivalTime
-        - TransportType transportType
-    }
-
+package "Trip" {
     
+    class TripPlan {
+        - hotel : Hotel
+        - activities : List<Activity>
+        - journeyTo : Journey
+        - journeyBack : Journey
+        - errors : List<String>
 
-    interface IHotelProvider {
-        + Hotel findHotel(city, rating, cheapestPriority)
-        - List<Hotel> findByRating(city, minRating)
-        - Hotel getCheapestHotel(list, rating)
-        - Hotel getHigherRatedHotel(list)
+        + TripPlan(hotel: Hotel, activities: List<Activity>, journeyTo: Journey, journeyBack: Journey)
+
+        + getHotel() : Hotel
+        + getActivities() : List<Activity>
+        + getJourneyTo() : Journey
+        + getJourneyBack() : Journey
+        + getErrors() : List<String>
+
+        + addError(msg: String)
+        + isValid() : boolean
+        + toString() : String
     }
 
-    class HotelProvider {
-        - String CSV_PATH
-        + List<Hotel> findHotel(city, rating, cheapestPriority)
-        - List<Hotel> findByRating(city, minRating)
-        - List<Hotel> getCheapestHotel(hotelList, rating)
-        - List<Hotel> getHigherRatedHotel(hotelList)
+    class UserCriterias {
+        - destinationCity : String
+        - cityFrom : String
+        - cityBack : String
+        - startDate : Date
+        - duration : int
+
+        - maxPrice : double
+        - minHotelRating : double
+        - hotelPriority : HotelPriority
+
+        - activityCategories : List<ActivityCategory>
+        - maxDistance : double
+
+        - transportType : TransportType
+        - transportPriority : TransportPriority
+
+        ' + UserCriterias(destinationCity : String,cityFrom : String,cityBack : String,startDate : Date,duration : int,maxPrice : double,minHotelRating : double,hotelPriority : HotelPriority,activityCategories : List<ActivityCategory>,maxDistance : double,transportType : TransportType,transportPriority : TransportPriority)
+
+        + getDestinationCity() : String
+        + getCityFrom() : String
+        + getCityBack() : String
+        + getStartDate() : Date
+        + getDuration() : int
+
+        + getMaxPrice() : double
+        + getMinHotelRating() : double
+        + getHotelPriority() : HotelPriority
+
+        + getActivityCategories() : List<ActivityCategory>
+        + getMaxDistance() : double
+
+        + getTransportType() : TransportType
+        + getTransportPriority() : TransportPriority
     }
 
-    class Hotel {
-        - String city
-        - Address address
-        - double rating
-        - double pricePerNight
+
+    class TripPlanner {
+        - hotelService : HotelService
+        - activityService : ActivityService
+        - journeyService : JourneyService
+
+        + TripPlanner(hotelService: HotelService, activityService: ActivityService, journeyService: JourneyService)
+        + planTrip(userCriterias: UserCriterias) : List<TripPlan>
     }
 
 
+    package "Hotel" {
 
-    interface ActivityProvider {
-        + List<Activity> findActivities(criteria)
+        class Hotel {
+            - address : String
+            - city : String
+            - rating : double
+            - pricePerNight : double
+
+            + Hotel(address: String, city: String, rating: double, pricePerNight: double)
+            
+            + getAddress() : String
+            + getCity() : String
+            + getRating() : double
+            + getPricePerNight() : double
+
+            + toString() : String
+        }
+
+        enum HotelPriority {
+            CHEAPEST
+            HIGHEST_RATED
+        }
+
+        class HotelService {
+            - hotelRepository : IHotelRepository
+
+            + HotelService(hotelRepository: IHotelRepository)
+            + findBestHotel(city: String, rating: double, hotelPriority: HotelPriority) : List<Hotel>
+            - filterByCity(hotels: List<Hotel>, city: String) : List<Hotel>
+            - filterByMinRating(hotels: List<Hotel>, minRating: double) : List<Hotel>
+            - getCheapestHotel(hotels: List<Hotel>) : List<Hotel>
+            - getHigherRatedHotel(hotels: List<Hotel>) : List<Hotel>
+        }
+
+        interface IHotelRepository {
+            + getAllHotels() : List<Hotel> 
+        }
+
+        class HotelRepository implements IHotelRepository {
+            - allHotels : List<Hotel>
+
+            + HotelRepository(filePath: String)
+            + getAllHotels() : List<Hotel> 
+        }
+    }
+
+
+    package "Activity" {
+
+        enum ActivityCategory {
+            SPORT
+            MUSIQUE
+            CULTURE
+            FOOD
+            NATURE
+            CACA
+            ANY
+        }
+
+        class Activity {
+            + city : String
+            + address : String
+            + date : Date
+            + category : ActivityCategory
+            + price : double
+
+            + Activity(city: String, address: String, date: Date, category: ActivityCategory, price: double)
+
+            + getCity() : String
+            + getAddress() : String
+            + getDate() : Date
+            + getCategory() : String
+            + getPrice() : double
+
+            + toString() : String
+        }
+
+        class ActivityService {
+            - activityRepository : IActivityRepository
+
+            + ActivityService(activityRepository: IActivityRepository)
+            + findBestActivity(city: String, hotelAddress: String, maxDistanceToHotel: double, categories: List<ActivityCategory>, date: Date) : List<Activity>
+            - filterByMaxDistance(activities: List<Activity>, city: String, centerAddress: String, maxDistance: double) : List<Activity>
+            - filterByDate(activities: List<Activity>, date: Date) : List<Activity>
+            - filterByCategory(activities: List<Activity>, categories: List<ActivityCategory>) : List<Activity>
+        }
+
+        interface IActivityRepository {
+            + getAllActivities() : List<Activity> 
+        }
+
+        class ActivityRepository implements IActivityRepository {
+            - allActivities : List<Activity>
+
+            + ActivityRepository(filePath: String)
+            + getAllActivities() : List<Activity> 
+        }
+    }
+
+
+    package "Transport" {
+
+        class Transport {
+            - cityFrom String
+            - cityTo String
+            - travelDate Date
+            - departureTime Time
+            - arrivalTime Time
+            - transportType TransportType
+
+            + Transport(cityFrom: String, cityTo: String, travelDate: Date, departureTime: Time, arrivalTime: Time, transportType: TransportType)
+
+            + getCityFrom() : String
+            + getCityTo() : String
+            + getTravelDate() : Date
+            + getDepartureTime() : Time
+            + getArrivalTime() : Time
+            + getTransportType() : TransportType
+
+            + toString() : String
+        }
+
+        enum TransportType {
+            FLIGHT
+            TRAIN
+            ANY
+        }
+
+        enum TransportPriority {
+            CHEAPEST
+            SHORTEST_DURATION
+        }
+
+        class TransportService {
+            - transportRepository : ITransportRepository
+
+            + TransportService(transportRepository: ITransportRepository)
+            + findTransport(cityFrom: String, cityTo: String, date: Date, transportType: TransportType, transportPriority: TransportPriority) : List<Transport>
+            - filterByCityFrom(transports: List<Transport>, cityFrom: String) : List<Transport>
+            - filterByCityTo(transports: List<Transport>, cityTo: String) : List<Transport>
+            - filterByDate(transports: List<Transport>, date: Date) : List<Transport>
+            - filterByTransportType(transports: List<Transport>, transportType: TransportType) : List<Transport>
+        }
+
+        interface ITransportRepository {
+            + getAllTransports() : List<Transport>
+        }
+
+        class TransportRepository implements ITransportRepository {
+            - allTransports : List<Transport>
+
+            + TransportRepository(filePath: String)
+            + getAllTransports() : List<Transport> 
+        }
+
+        class Journey {
+            - steps : List<Transport>
+
+            + Journey(steps: List<Transport>)
+
+            + getSteps() : List<Transport>
+            + getCityFrom() : String
+            + getDepartureDateTime() : Date
+            + getCityTo() : String
+            + getArrivalDateTime() : Date
+            + getTransportType() : TransportType
+
+            + getTotalDuration() : Duration
+            + getTotalPrice() : double
+
+            + toString() : String
+        }
+
+        class JourneyService {
+            - MAX_TRANSFERS : int = 3
+
+            + JourneyService(transportService: TransportService)
+            + findJourney(cityFrom: String, cityTo: String, date: Date, transportType: TransportType, transportPriority: TransportPriority) : List<Journey>
+            - exploreRoutes(allTransports: List<Transport>, currentCity: String, targetCity: String, transportType: TransportType, currentPath: List<Transport>, results: List<Journey>)
+            - filterJourneysByPriority(journeys: List<Journey>, priority: TransportPriority) : List<Journey>
+        }
     }
 }
 
+package "Geolocation" {
+    interface IGeoService {
+        + getCoordinates(address: String) : Coordinates
+        + getDistanceKm(p1: Coordinates, p2: Coordinates) : double
+    }
+    
+    class Coordinates {
+        + lat : double
+        + lon : double
+
+        + Coordinates(lat: double, lon: double)
+        + getLat() : double
+        + getLon() : double
+        + toString() : String
+    }
+    
+    class ApiGeoService implements IGeoService {
+        ' Appel API HTTP réel
+    }
+}
+
+
+
+
 ' Relations
-IHotelProvider <|.. HotelProvider
+HotelService --> IHotelRepository : utilise (injecté)
+HotelRepository --> Hotel : manipule
+HotelService ..> HotelPriority : utilise
+HotelService ..> Hotel : filtre et retourne
+
+ActivityService --> IActivityRepository : utilise (injecté)
+ActivityRepository --> Activity : manipule
+ActivityService ..> ActivityCategory : utilise
+ActivityService ..> Activity : filtre et retourne
+Activity ..> ActivityCategory : utilise
+
+TransportService --> ITransportRepository : utilise (injecté)
+TransportRepository --> Transport : manipule
+TransportService ..> TransportType : utilise
+TransportService ..> TransportPriority : utilise
+TransportService ..> Transport : filtre et retourne
+JourneyService ..> Journey : crée et retourne
+JourneyService ..> TransportPriority : utilise
+JourneyService ..> TransportType : utilise
+JourneyService --> TransportService : utilise (injecté)
+Journey ..> Transport : utilise
+
+TripPlanner --> HotelService : utilise (injecté)
+TripPlanner --> ActivityService : utilise (injecté)
+TripPlanner --> JourneyService : utilise (injecté)
+TripPlanner ..> TripPlan : crée et retourne
+TripPlan ..> Hotel : utilise
+TripPlan ..> Activity : utilise
+TripPlan ..> Journey : utilise
+TripPlanner ..> UserCriterias : utilise
+
+IGeoService ..> Coordinates : utilise
 
 @enduml
