@@ -5,6 +5,19 @@ skinparam interfaceStyle strict
 
 title Architecture de Agence Voyage
 
+class App {
+    - DEFAULT_CRITERIA_JSON_PATH : String
+    - DEFAULT_RESULTS_JSON_PATH : String
+
+    - DEFAULT_HOTEL_CSV_PATH : String
+    - DEFAULT_ACTIVITY_CSV_PATH : String
+    - DEFAULT_TRANSPORT_CSV_PATH : String
+    
+    + main(args: String[])
+    - loadCriterias(filePath: String) : UserCriterias
+    - saveResults(filePath: String, tripPlans: List<TripPlan>)
+}
+
 package "Trip" {
     
     class TripPlan {
@@ -290,6 +303,20 @@ package "Geolocation" {
 
 
 ' Relations
+App ..> HotelRepository : instancie
+App ..> ActivityRepository : instancie
+App ..> TransportRepository : instancie
+App ..> ApiGeoService : instancie
+
+App ..> HotelService : crée et configure
+App ..> ActivityService : crée et configure
+App ..> TransportService : crée et configure
+App ..> JourneyService : crée et configure
+App ..> TripPlanner : crée et configure
+
+App ..> UserCriterias : charge depuis JSON
+App ..> TripPlan : sauvegarde vers JSON
+
 HotelService --> IHotelRepository : utilise (injecté)
 HotelRepository --> Hotel : manipule
 HotelService ..> HotelPriority : utilise
