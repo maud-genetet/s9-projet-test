@@ -101,11 +101,11 @@ package "Trip" {
             - hotelRepository : IHotelRepository
 
             + HotelService(hotelRepository: IHotelRepository)
-            + findBestHotel(city: String, rating: double, hotelPriority: HotelPriority) : List<Hotel>
+            + findBestHotels(city: String, rating: double, hotelPriority: HotelPriority) : List<Hotel>
             - filterByCity(hotels: List<Hotel>, city: String) : List<Hotel>
             - filterByMinRating(hotels: List<Hotel>, minRating: double) : List<Hotel>
-            - getCheapestHotel(hotels: List<Hotel>) : List<Hotel>
-            - getHigherRatedHotel(hotels: List<Hotel>) : List<Hotel>
+            - getCheapestHotels(hotels: List<Hotel>) : List<Hotel>
+            - getHigherRatedHotels(hotels: List<Hotel>) : List<Hotel>
         }
 
         interface IHotelRepository {
@@ -155,7 +155,7 @@ package "Trip" {
             - activityRepository : IActivityRepository
 
             + ActivityService(activityRepository: IActivityRepository)
-            + findBestActivity(city: String, hotelAddress: String, maxDistanceToHotel: double, categories: List<ActivityCategory>, date: Date) : List<Activity>
+            + findBestActivities(city: String, hotelAddress: String, maxDistanceToHotel: double, categories: List<ActivityCategory>, date: Date) : List<Activity>
             - filterByMaxDistance(activities: List<Activity>, city: String, centerAddress: String, maxDistance: double) : List<Activity>
             - filterByDate(activities: List<Activity>, date: Date) : List<Activity>
             - filterByCategory(activities: List<Activity>, categories: List<ActivityCategory>) : List<Activity>
@@ -259,11 +259,6 @@ package "Trip" {
 }
 
 package "Geolocation" {
-    interface IGeoService {
-        + getCoordinates(address: String) : Coordinates
-        + getDistanceKm(p1: Coordinates, p2: Coordinates) : double
-    }
-    
     class Coordinates {
         + lat : double
         + lon : double
@@ -273,9 +268,20 @@ package "Geolocation" {
         + getLon() : double
         + toString() : String
     }
+
+    interface IGeoService {
+        + getCoordinates(address: String) : Coordinates
+        + getDistanceKm(p1: Coordinates, p2: Coordinates) : double
+    }
     
     class ApiGeoService implements IGeoService {
-        ' Appel API HTTP réel
+        - apiKey : String
+        - baseUrl : String
+        - lastRequestTime : long
+        - REQUEST_INTERVAL_MS : long
+
+        + getCoordinates(address: String) : Coordinates
+        + getDistanceKm(p1: Coordinates, p2: Coordinates) : double
     }
 }
 
@@ -292,6 +298,7 @@ ActivityService --> IActivityRepository : utilise (injecté)
 ActivityRepository --> Activity : manipule
 ActivityService ..> ActivityCategory : utilise
 ActivityService ..> Activity : filtre et retourne
+ActivityService ..> IGeoService : utilise
 Activity ..> ActivityCategory : utilise
 
 TransportService --> ITransportRepository : utilise (injecté)
