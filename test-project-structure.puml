@@ -153,8 +153,9 @@ package "Trip" {
 
         class ActivityService {
             - activityRepository : IActivityRepository
+            - geoService : IGeoService
 
-            + ActivityService(activityRepository: IActivityRepository)
+            + ActivityService(activityRepository: IActivityRepository, geoService: IGeoService)
             + findBestActivities(city: String, hotelAddress: String, maxDistanceToHotel: double, categories: List<ActivityCategory>, date: Date) : List<Activity>
             - filterByMaxDistance(activities: List<Activity>, city: String, centerAddress: String, maxDistance: double) : List<Activity>
             - filterByDate(activities: List<Activity>, date: Date) : List<Activity>
@@ -295,10 +296,10 @@ HotelService ..> HotelPriority : utilise
 HotelService ..> Hotel : filtre et retourne
 
 ActivityService --> IActivityRepository : utilise (injecté)
+ActivityService --> IGeoService : utilise (injecté)
 ActivityRepository --> Activity : manipule
 ActivityService ..> ActivityCategory : utilise
 ActivityService ..> Activity : filtre et retourne
-ActivityService ..> IGeoService : utilise
 Activity ..> ActivityCategory : utilise
 
 TransportService --> ITransportRepository : utilise (injecté)
