@@ -284,18 +284,18 @@ package "Geolocation" {
     }
 
     interface IGeoService {
-        + getCoordinates(address: String) : Coordinates
-        + getDistanceKm(p1: Coordinates, p2: Coordinates) : double
+        + getCoordinates(city: String, address: String) : Coordinates
+        + getDistanceKm(city: String, address1: String, address2: String) : double
     }
     
     class ApiGeoService implements IGeoService {
         - apiKey : String
         - baseUrl : String
         - lastRequestTime : long
-        - REQUEST_INTERVAL_MS : long
+        ~ REQUEST_INTERVAL_MS : long
 
-        + getCoordinates(address: String) : Coordinates
-        + getDistanceKm(p1: Coordinates, p2: Coordinates) : double
+        + getCoordinates(city: String, address: String) : Coordinates
+        + getDistanceKm(city: String, address1: String, address2: String) : double
     }
 }
 
