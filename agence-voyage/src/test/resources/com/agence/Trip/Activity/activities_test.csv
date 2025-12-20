@@ -1,0 +1,11 @@
+city,address,date,category,price
+Paris,Musée du Louvre,2025-06-15,CULTURE,15.50
+Paris,Le Grand Véfour,2025-06-15,FOOD,85.00
+Paris,Jardin des Tuileries,2025-06-16,RELAXATION,0.0
+Lyon,Parc de la Tête d'Or,2025-07-20,SPORT,0.0
+Lyon,Halle Tony Garnier,2025-07-21,MUSIQUE,45.00
+Lyon,Vieux Lyon,2025-07-21,CULTURE,0.0
+Marseille,Calanques,2025-08-01,NATURE,0.0
+Marseille,Vieux Port,2025-08-01,FOOD,25.00
+Chamonix,Mont Blanc,2025-08-10,ADVENTURE,120.00
+Bordeaux,Vignobles,2025-09-05,NATURE,12.00
