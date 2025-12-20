@@ -50,3 +50,6 @@ logs/
 # --- Misc ---
 *.swp
 *.swo
+
+# --- Environment Variables ---
+.env
