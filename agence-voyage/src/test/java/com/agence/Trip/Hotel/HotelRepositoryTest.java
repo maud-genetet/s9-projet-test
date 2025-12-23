@@ -58,12 +58,16 @@ public class HotelRepositoryTest {
         System.setErr(new PrintStream(errContent));
 
         try {
-            HotelRepository repository = new HotelRepository(nonExistentFilePath);
+            new HotelRepository(nonExistentFilePath);
 
             String output = errContent.toString();
             
-            assertTrue(output.contains("Error reading file") || output.contains("Exception"), "Le message d'erreur doit être logué");
-            assertTrue(output.contains(nonExistentFilePath), "Le chemin du fichier doit apparaître dans les logs");
+            assertTrue(output.contains("Error reading file"), "Le début du message doit être présent");
+            assertTrue(output.contains(nonExistentFilePath), "Le chemin du fichier doit être présent");
+            
+            boolean containsSystemError = output.contains("(No such file or directory)");
+                                       
+            assertTrue(containsSystemError);
             
         } finally {
             System.setErr(originalErr);

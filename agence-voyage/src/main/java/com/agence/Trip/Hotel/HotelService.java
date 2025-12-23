@@ -29,12 +29,20 @@ public class HotelService {
     }
 
     private List<Hotel> getCheapestHotels(List<Hotel> hotels){
-        double minPrice = hotels.stream().mapToDouble(Hotel::getPricePerNight).min().orElse(Double.MAX_VALUE);
+        if (hotels.isEmpty()) {
+            return List.of();
+        }
+
+        double minPrice = hotels.stream().mapToDouble(Hotel::getPricePerNight).min().getAsDouble();
         return hotels.stream().filter(hotel -> hotel.getPricePerNight() == minPrice).toList();
     }
 
     private List<Hotel> getHigherRatedHotels(List<Hotel> hotels){
-        double maxRate = hotels.stream().mapToDouble(Hotel::getRating).max().orElse(6);
+        if (hotels.isEmpty()) {
+            return List.of();
+        }
+
+        double maxRate = hotels.stream().mapToDouble(Hotel::getRating).max().getAsDouble();
         return hotels.stream().filter(hotel -> hotel.getRating() == maxRate).toList();
     }
 }

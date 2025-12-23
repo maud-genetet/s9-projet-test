@@ -125,4 +125,16 @@ public class HotelServiceTest {
         assertEquals(2, result.size());
         assertTrue(result.containsAll(List.of(h1, h2)));
     }
+
+    @Test
+    public void shouldReturnEmpty_WhenPriorityIsRatingAndListIsEmpty() {
+        // Arrange
+        when(mockRepository.getAllHotels()).thenReturn(List.of()); 
+
+        // Act
+        List<Hotel> result = hotelService.findBestHotels("Paris", 5.0, HotelPriority.HIGHEST_RATED);
+
+        // Assert
+        assertTrue(result.isEmpty(), "La liste doit être vide et ne pas planter");
+    }
 }
