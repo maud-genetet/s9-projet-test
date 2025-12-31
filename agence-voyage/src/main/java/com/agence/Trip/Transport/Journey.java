@@ -1,5 +1,6 @@
 package com.agence.Trip.Transport;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Journey {
 
@@ -7,16 +8,28 @@ public class Journey {
     private String arrivalCity;
     private JourneyType journeyType;
     private double price;
-    private Date departureDate;
-    private Date arrivalDate;
+    private LocalDateTime departureLocalDateTime;
+    private LocalDateTime arrivalLocalDateTime;
 
-    public Journey(String departureCity, String arrivalCity, JourneyType journeyType, double price, Date departureDate, Date arrivalDate) {
+    public Journey(String departureCity, String arrivalCity, JourneyType journeyType, double price, LocalDateTime departureLocalDateTime, LocalDateTime arrivalLocalDateTime) {
+        if (departureCity == null || arrivalCity == null || journeyType == null || departureLocalDateTime == null || arrivalLocalDateTime == null) {
+            throw new IllegalArgumentException("None of the parameters can be null");
+        }
+        if (price < 0) {
+            throw new IllegalArgumentException("Price cannot be negative");
+        }
+        if (arrivalLocalDateTime.isBefore(departureLocalDateTime)) {
+            throw new IllegalArgumentException("Arrival time cannot be before departure time");
+        }
+        if (departureCity.isEmpty() || arrivalCity.isEmpty()) {
+            throw new IllegalArgumentException("City names cannot be empty");
+        }
         this.departureCity = departureCity;
         this.arrivalCity = arrivalCity;
         this.journeyType = journeyType;
         this.price = price;
-        this.departureDate = departureDate;
-        this.arrivalDate = arrivalDate;
+        this.departureLocalDateTime = departureLocalDateTime;
+        this.arrivalLocalDateTime = arrivalLocalDateTime;
     }
 
     public String getDepartureCity() {
@@ -51,26 +64,26 @@ public class Journey {
         this.price = price;
     }
 
-    public Date getDepartureDate() {
-        return departureDate;
+    public LocalDateTime getDepartureLocalDateTime() {
+        return departureLocalDateTime;
     }
 
-    public void setDepartureDate(Date departureDate) {
-        this.departureDate = departureDate;
+    public void setDepartureLocalDateTime(LocalDateTime departureLocalDateTime) {
+        this.departureLocalDateTime = departureLocalDateTime;
     }
 
-    public Date getArrivalDate() {
-        return arrivalDate;
+    public LocalDateTime getArrivalLocalDateTime() {
+        return arrivalLocalDateTime;
     }
 
-    public void setArrivalDate(Date arrivalDate) {
-        this.arrivalDate = arrivalDate;
+    public void setArrivalLocalDateTime(LocalDateTime arrivalLocalDateTime) {
+        this.arrivalLocalDateTime = arrivalLocalDateTime;
     }
 
     @Override
     public String toString() {
         return "Journey [departureCity=" + departureCity + ", arrivalCity=" + arrivalCity + ", journeyType="
-                + journeyType + ", price=" + price + ", departureDate=" + departureDate + ", arrivalDate=" + arrivalDate
+                + journeyType + ", price=" + price + ", departureLocalDateTime=" + departureLocalDateTime + ", arrivalLocalDateTime=" + arrivalLocalDateTime
                 + "]";
     }
 

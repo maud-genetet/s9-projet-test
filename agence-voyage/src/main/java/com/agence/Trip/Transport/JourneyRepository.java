@@ -5,9 +5,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class JourneyRepository implements IJourneyRepository {
+
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private List<Journey> AllJourney = new ArrayList<>();
 
@@ -33,8 +36,8 @@ public class JourneyRepository implements IJourneyRepository {
                     data[1],
                     JourneyType.valueOf(data[2].toUpperCase()),
                     Double.parseDouble(data[3]),
-                    new Date(Long.parseLong(data[4])),
-                    new Date(Long.parseLong(data[5]))
+                    LocalDateTime.parse(data[4], FORMATTER),
+                    LocalDateTime.parse(data[5], FORMATTER)
                 ));
             }
         } catch (IOException | NumberFormatException e) {

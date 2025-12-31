@@ -2,7 +2,8 @@ package com.agence.Trip.Transport;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class ItineraryService {
 
@@ -12,12 +13,12 @@ public class ItineraryService {
         this.journeyRepository = journeyRepository;
     }
 
-    public List<Itinerary> findBestItineraries(String departureCity, String arrivalCity, Date departureDate, TransportPriority priority, JourneyType journeyType, double maxPrice) {
+    public List<Itinerary> findBestItineraries(String departureCity, String arrivalCity, LocalDateTime departureLocalDateTime, TransportPriority priority, JourneyType journeyType, double maxPrice) {
         List<Journey> allJourneys = journeyRepository.getAllJourney();
         List<Itinerary> matchingItineraries = new ArrayList<>();
 
-        // Filtrer les journeys qui commencent de la ville de départ et après la date
-        List<Journey> afterJourneys = getAllJourneysAfterOrEqualDate(allJourneys, departureDate);
+        // Filtrer les journeys qui commencent de la ville de départ et après la LocalDateTime
+        List<Journey> afterJourneys = getAllJourneysAfterOrEqualLocalDateTime(allJourneys, departureLocalDateTime);
         afterJourneys = getAllJourneysByJourneyType(afterJourneys, journeyType);
         List<Journey> posiblesNextJourneys = getAllJourneysStartFromCity(afterJourneys, departureCity);
 
@@ -53,7 +54,7 @@ public class ItineraryService {
         }
 
         // Chercher les prochains journeys possibles
-        List<Journey> afterJourneys = getAllJourneysAfterOrEqualDate(allJourneys, lastJourney.getArrivalDate());
+        List<Journey> afterJourneys = getAllJourneysAfterOrEqualLocalDateTime(allJourneys, lastJourney.getArrivalLocalDateTime());
         List<Journey> posiblesNextJourneys = getAllJourneysStartFromCity(afterJourneys, lastJourney.getArrivalCity());
 
         // Pour chaque journey possible, explorer tous les chemins
@@ -69,10 +70,13 @@ public class ItineraryService {
         return results;
     }
 
-    private List<Journey> getAllJourneysAfterOrEqualDate(List<Journey> journeys, Date date) {
+    private List<Journey> getAllJourneysAfterOrEqualLocalDateTime(List<Journey> journeys, LocalDateTime LocalDateTime) {
         List<Journey> filteredJourneys = new ArrayList<>();
         for (Journey journey : journeys) {
-            if (!journey.getDepartureDate().before(date)) {
+            long ts1 = journey.getDepartureLocalDateTime().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli();
+            long ts2 = LocalDateTime.atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli();
+            long diff = ts1 - ts2;
+            if (diff >= 0) {
                 filteredJourneys.add(journey);
             }
         }
@@ -126,7 +130,7 @@ public class ItineraryService {
         int bestDuration = Integer.MAX_VALUE;
 
         for (Itinerary itinerary : itineraries) {
-            int duration = itinerary.getDuration();
+            int duration = itinerary.getDurationInMinutes();
             if (duration < bestDuration) {
                 bestItineraries.clear();
                 bestItineraries.add(itinerary);
