@@ -1,0 +1,106 @@
+@startuml
+
+skinparam packageStyle rectangle
+skinparam interfaceStyle strict
+
+title Architecture du Projet
+
+class App {
+    + main(args: String[])
+    - loadCriterias(filePath: String) : UserCriterias
+    - saveResults(filePath: String, tripPlans: List<TripPlan>)
+}
+
+class UserCriterias {
+    ' - destinationCity : String
+    ' - cityFrom : String
+    ' - cityBack : String
+    ' - startDate : Date
+    ' - duration : int
+
+    ' - maxPrice : double
+    ' - minHotelRating : double
+    ' - hotelPriority : HotelPriority
+
+    ' - activityCategories : List<ActivityCategory>
+    ' - maxDistance : double
+
+    ' - transportType : TransportType
+    ' - transportPriority : TransportPriority
+}
+
+package "Trip" {
+    
+    class TripPlan {
+        - hotel : Hotel
+        - activities : List<Activity>
+        - journeyTo : Journey
+        - journeyBack : Journey
+        - errors : List<String>
+    }
+
+
+    class TripPlanner {
+        - hotelService : HotelService
+        - activityService : ActivityService
+        - journeyService : JourneyService
+
+        + planTrip(userCriterias: UserCriterias) : List<TripPlan>
+    }
+
+
+    package "Hotel" {
+        class HotelService {
+        }
+    }
+
+
+    package "Transport" {
+        class JourneyService {
+        }
+    }
+
+    package "Activity" {
+        class ActivityService {
+        }
+    }
+}
+
+package "Geolocation" {
+    class Coordinates {
+        + lat : double
+        + lon : double
+    }
+
+    interface IGeoService {
+        + getCoordinates(city, address) : Coordinates
+        + getDistanceKm(city, address1, address2) : double
+    }
+    
+    class ApiGeoService implements IGeoService {
+        - apiKey : String
+        - baseUrl : String
+        ~ REQUEST_INTERVAL_MS : long
+
+        + getCoordinates(city, address) : Coordinates
+        + getDistanceKm(city, address1, address2) : double
+    }
+}
+
+
+
+
+' Relations
+App ..> TripPlanner : configure
+App ..> UserCriterias
+
+TripPlanner *-- HotelService : injecté
+TripPlanner *-- ActivityService : injecté
+TripPlanner *-- JourneyService : injecté
+TripPlanner ..> TripPlan
+
+IGeoService ..> Coordinates
+
+ActivityService *-- IGeoService : injecté
+
+@enduml
