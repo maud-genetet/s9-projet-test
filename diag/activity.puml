@@ -1,0 +1,47 @@
+@startuml
+
+skinparam packageStyle rectangle
+skinparam interfaceStyle strict
+
+package "Activity" {
+
+    enum ActivityCategory {
+        SPORT
+        MUSIQUE
+        CULTURE
+        FOOD
+        NATURE
+        ANY
+    }
+
+    class Activity {
+        + city : String
+        + address : String
+        + date : Date
+        + category : ActivityCategory
+        + price : double
+    }
+
+    class ActivityService {
+        - activityRepository : IActivityRepository
+        - geoService : IGeoService
+
+        + findBestActivities(criterias) : List<Activity>
+    }
+
+    interface IActivityRepository {
+        + getAllActivities() : List<Activity> 
+    }
+
+    class ActivityRepository implements IActivityRepository {
+        + ActivityRepository(filePath: String)
+        + getAllActivities() : List<Activity> 
+    }
+}
+
+ActivityService *-- IActivityRepository : injecté
+ActivityService *-- IGeoService : injecté
+ActivityRepository o-- Activity
+Activity ..> ActivityCategory
+
+@enduml

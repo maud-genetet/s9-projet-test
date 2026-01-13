@@ -65,9 +65,11 @@ public class HotelRepositoryTest {
             assertTrue(output.contains("Error reading file"), "Le début du message doit être présent");
             assertTrue(output.contains(nonExistentFilePath), "Le chemin du fichier doit être présent");
             
-            boolean containsSystemError = output.contains("(No such file or directory)");
+            boolean containsSystemErrorEn = output.contains("(No such file or directory)");
+            boolean containsSystemErrorFr = output.contains("(Aucun fichier ou dossier de ce nom)");
+            boolean containsSystemError = containsSystemErrorEn || containsSystemErrorFr;
                                        
-            assertTrue(containsSystemError);
+            assertTrue(containsSystemError);    
             
         } finally {
             System.setErr(originalErr);

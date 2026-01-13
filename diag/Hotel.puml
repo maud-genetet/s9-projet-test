@@ -1,0 +1,40 @@
+@startuml
+
+skinparam packageStyle rectangle
+skinparam interfaceStyle strict
+
+package "Hotel" {
+
+    class Hotel {
+        - address : String
+        - city : String
+        - rating : double
+        - pricePerNight : double
+    }
+
+    enum HotelPriority {
+        CHEAPEST
+        HIGHEST_RATED
+    }
+
+    class HotelService {
+        - hotelRepository : IHotelRepository
+
+        + findBestHotels(criterias) : List<Hotel>
+    }
+
+    interface IHotelRepository {
+        + getAllHotels() : List<Hotel> 
+    }
+
+    class HotelRepository implements IHotelRepository {
+        + HotelRepository(filePath: String)
+        + getAllHotels() : List<Hotel> 
+    }
+}
+
+HotelService *-- IHotelRepository : injecté
+HotelRepository o-- Hotel
+HotelService ..> HotelPriority
+
+@enduml
