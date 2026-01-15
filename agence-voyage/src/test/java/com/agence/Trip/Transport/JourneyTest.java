@@ -1,8 +1,9 @@
 package com.agence.Trip.Transport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
- import java.time.LocalDateTime;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 
@@ -162,4 +163,79 @@ public class JourneyTest {
         Journey planeJourney = new Journey("Paris", "Nice", JourneyType.PLANE, 150.00, departure, arrival);
         assertEquals(JourneyType.PLANE, planeJourney.getJourneyType());
     }
+
+    @Test 
+    void testCreateJourneyWithNullArguments() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Journey(null, "Lyon", JourneyType.TRAIN, 50.0,
+                    LocalDateTime.parse("2025-12-25 00:00:00", FORMATTER),
+                    LocalDateTime.parse("2025-12-25 02:00:00", FORMATTER));
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Journey("Paris", null, JourneyType.TRAIN, 50.0,
+                    LocalDateTime.parse("2025-12-25 00:00:00", FORMATTER),
+                    LocalDateTime.parse("2025-12-25 02:00:00", FORMATTER));
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Journey("Paris", "Lyon", null, 50.0,
+                    LocalDateTime.parse("2025-12-25 00:00:00", FORMATTER),
+                    LocalDateTime.parse("2025-12-25 02:00:00", FORMATTER));
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Journey("Paris", "Lyon", JourneyType.TRAIN, 50.0,
+                    null,
+                    LocalDateTime.parse("2025-12-25 02:00:00", FORMATTER));
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Journey("Paris", "Lyon", JourneyType.TRAIN, 50.0,
+                    LocalDateTime.parse("2025-12-25 00:00:00", FORMATTER),
+                    null);
+        });
+    }
+
+    @Test 
+    public void testCreateJourneyWithEmptyCityNames() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Journey("", "Lyon", JourneyType.TRAIN, 50.0,
+                    LocalDateTime.parse("2025-12-25 00:00:00", FORMATTER),
+                    LocalDateTime.parse("2025-12-25 02:00:00", FORMATTER));
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Journey("Paris", "", JourneyType.TRAIN, 50.0,
+                    LocalDateTime.parse("2025-12-25 00:00:00", FORMATTER),
+                    LocalDateTime.parse("2025-12-25 02:00:00", FORMATTER));
+        });
+    }
+
+    @Test 
+    public void testCreateJourneyWithNegativePrice() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Journey("Paris", "Lyon", JourneyType.TRAIN, -10.0,
+                    LocalDateTime.parse("2025-12-25 00:00:00", FORMATTER),
+                    LocalDateTime.parse("2025-12-25 02:00:00", FORMATTER));
+        });
+    }
+
+    @Test 
+    public void testCreateJourneyWithArrivalBeforeDeparture() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Journey("Paris", "Lyon", JourneyType.TRAIN, 50.0,
+                    LocalDateTime.parse("2025-12-25 02:00:00", FORMATTER),
+                    LocalDateTime.parse("2025-12-25 00:00:00", FORMATTER));
+        });
+    }
+
+    @Test 
+    public void testCreateJourneyWithValidePrice() {
+        Journey journey = new Journey("Paris", "Lyon", JourneyType.TRAIN, 0.0,
+                LocalDateTime.parse("2025-12-25 00:00:00", FORMATTER),
+                LocalDateTime.parse("2025-12-25 02:00:00", FORMATTER));
+        assertEquals(0.0, journey.getPrice());
+    }
+
 }

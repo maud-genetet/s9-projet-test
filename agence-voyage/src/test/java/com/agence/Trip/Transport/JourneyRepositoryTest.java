@@ -2,9 +2,11 @@ package com.agence.Trip.Transport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +32,7 @@ public class JourneyRepositoryTest {
         assertEquals("Paris", firstJourney.getDepartureCity());
         assertEquals("Lyon", firstJourney.getArrivalCity());
         assertEquals(JourneyType.TRAIN, firstJourney.getJourneyType());
-        assertEquals(50.00, firstJourney.getPrice());
+        assertEquals(55.99, firstJourney.getPrice());
     }
 
     @Test
@@ -107,7 +109,43 @@ public class JourneyRepositoryTest {
             totalPrice += journey.getPrice();
         }
         
-        // 50 + 120 + 35 + 60 + 45 + 150 + 25 + 80 + 45 + 90 = 700
-        assertEquals(700.00, totalPrice);
+        // 55.99 + 120 + 35 + 60 + 45 + 150 + 25 + 80 + 45 + 90 = 700
+        assertEquals(705.99, totalPrice);
+    }
+
+    @Test
+    public void testJourneyTypeIsCaseInsensitive() {
+        JourneyRepository repository = new JourneyRepository(testFilePath);
+        
+        List<Journey> journeys = repository.getAllJourney();
+        
+        assertEquals(10, journeys.size(), "Doit charger 10 journeys");
+        
+        assertTrue(journeys.stream()
+            .anyMatch(j -> j.getJourneyType() == JourneyType.PLANE),
+            "Au moins un trajet doit avoir le type PLANE");
+        assertTrue(journeys.stream()
+            .anyMatch(j -> j.getJourneyType() == JourneyType.TRAIN),
+            "Au moins un trajet doit avoir le type TRAIN");
+    }
+
+    @Test
+    public void testJourneyDistanceCorrectlyParsed() {
+        JourneyRepository repository = new JourneyRepository(testFilePath);
+        
+        List<Journey> journeys = repository.getAllJourney();
+        
+        assertEquals(10, journeys.size(), "Doit avoir 10 journeys");
+        
+        Journey firstJourney = journeys.get(0);
+        assertEquals(55.99, firstJourney.getPrice(), 0.01, 
+                "Le prix du premier trajet doit être 55.99 parsé depuis data[3]");
+        
+        for (Journey journey : journeys) {
+            assertNotEquals(0.0, journey.getPrice(), 
+                    "Le prix ne doit pas être 0");
+            assertTrue(journey.getPrice() > 0, 
+                    "Le prix doit être positif");
+        }
     }
 }

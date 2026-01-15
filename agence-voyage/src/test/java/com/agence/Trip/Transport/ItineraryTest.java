@@ -238,4 +238,68 @@ public class ItineraryTest {
         assertEquals(155.00, itinerary.getTotalPrice()); // 50 + 35 + 45 + 25
         assertEquals("Monaco", itinerary.getLastJourney().getArrivalCity());
     }
+
+     @Test 
+    public void shouldReturnError_WhenAddNullJourney() {
+        // Arrange
+        Journey nullJourney = null;
+
+        Itinerary itinerary = new Itinerary();
+
+        // Act & Assert
+        try {
+            itinerary.addJourney(nullJourney);
+        } catch (IllegalArgumentException e) {
+            assertEquals("Journey cannot be null", e.getMessage());
+        }
+
+        assertEquals(0, itinerary.getDurationInMinutes());
+    }
+
+    @Test void shouldReturnError_WhenAddJourneyWithInvalidConnection() {
+        // Arrange
+        Journey journey1 = new Journey("Paris", "Lyon", JourneyType.TRAIN, 50.0,
+                LocalDateTime.parse("2025-12-25 00:00:00", FORMATTER),
+                LocalDateTime.parse("2025-12-25 02:00:00", FORMATTER));
+        Journey journey2 = new Journey("Marseille", "Nice", JourneyType.PLANE, 50.0,
+                LocalDateTime.parse("2025-12-25 03:00:00", FORMATTER),
+                LocalDateTime.parse("2025-12-25 05:00:00", FORMATTER));
+
+        Itinerary itinerary = new Itinerary();
+        itinerary.addJourney(journey1);
+
+        // Act & Assert
+        try {
+            itinerary.addJourney(journey2);
+        } catch (IllegalArgumentException e) {
+            assertEquals("The departure city of the new journey must match the arrival city of the last journey in the itinerary", e.getMessage());
+        }
+
+        assertEquals(120, itinerary.getDurationInMinutes());
+    }
+
+    @Test 
+    public void shouldReturnError_WhenAddJourneyWithInvalidTiming() {
+        // Arrange
+        Journey journey1 = new Journey("Paris", "Lyon", JourneyType.TRAIN, 50.0,
+                LocalDateTime.parse("2025-12-25 00:00:00", FORMATTER),
+                LocalDateTime.parse("2025-12-25 02:00:00", FORMATTER));
+        Journey journey2 = new Journey("Lyon", "Nice", JourneyType.PLANE, 50.0,
+                LocalDateTime.parse("2025-12-25 01:00:00", FORMATTER), // Invalid timing
+                LocalDateTime.parse("2025-12-25 03:00:00", FORMATTER));
+
+        Itinerary itinerary = new Itinerary();
+        itinerary.addJourney(journey1);
+
+        // Act & Assert
+        try {
+            itinerary.addJourney(journey2);
+        } catch (IllegalArgumentException e) {
+
+            assertEquals("The departure time of the new journey must be after or equal the arrival time of the last journey in the itinerary", e.getMessage());
+        }
+
+        assertEquals(120, itinerary.getDurationInMinutes());
+    }
+
 }

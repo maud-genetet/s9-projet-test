@@ -13,11 +13,14 @@ public class ItineraryService {
         this.journeyRepository = journeyRepository;
     }
 
-    public List<Itinerary> findBestItineraries(String departureCity, String arrivalCity, LocalDateTime departureLocalDateTime, TransportPriority priority, JourneyType journeyType, double maxPrice) {
+    public List<Itinerary> findBestItineraries(String departureCity, String arrivalCity,
+            LocalDateTime departureLocalDateTime, TransportPriority priority, JourneyType journeyType,
+            double maxPrice) {
         List<Journey> allJourneys = journeyRepository.getAllJourney();
         List<Itinerary> matchingItineraries = new ArrayList<>();
 
-        // Filtrer les journeys qui commencent de la ville de départ et après la LocalDateTime
+        // Filtrer les journeys qui commencent de la ville de départ et après la
+        // LocalDateTime
         List<Journey> afterJourneys = getAllJourneysAfterOrEqualLocalDateTime(allJourneys, departureLocalDateTime);
         afterJourneys = getAllJourneysByJourneyType(afterJourneys, journeyType);
         List<Journey> posiblesNextJourneys = getAllJourneysStartFromCity(afterJourneys, departureCity);
@@ -26,7 +29,7 @@ public class ItineraryService {
         for (Journey startJourney : posiblesNextJourneys) {
             Itinerary itinerary = new Itinerary();
             itinerary.addJourney(startJourney);
-            
+
             // Récupérer tous les itinéraires possibles
             List<Itinerary> allItinerariesFromStart = getAllItineraries(itinerary, afterJourneys, arrivalCity);
             matchingItineraries.addAll(allItinerariesFromStart);
@@ -36,7 +39,7 @@ public class ItineraryService {
         matchingItineraries = deleteItinerariesTooExpensive(matchingItineraries, maxPrice);
         if (priority == TransportPriority.PRICE) {
             matchingItineraries = findItineratiesWithBestPrice(matchingItineraries);
-        } else if (priority == TransportPriority.DURATION) {
+        } else {
             matchingItineraries = findItineratiesWithBestDuration(matchingItineraries);
         }
 
@@ -54,7 +57,8 @@ public class ItineraryService {
         }
 
         // Chercher les prochains journeys possibles
-        List<Journey> afterJourneys = getAllJourneysAfterOrEqualLocalDateTime(allJourneys, lastJourney.getArrivalLocalDateTime());
+        List<Journey> afterJourneys = getAllJourneysAfterOrEqualLocalDateTime(allJourneys,
+                lastJourney.getArrivalLocalDateTime());
         List<Journey> posiblesNextJourneys = getAllJourneysStartFromCity(afterJourneys, lastJourney.getArrivalCity());
 
         // Pour chaque journey possible, explorer tous les chemins
@@ -70,16 +74,28 @@ public class ItineraryService {
         return results;
     }
 
-    private List<Journey> getAllJourneysAfterOrEqualLocalDateTime(List<Journey> journeys, LocalDateTime LocalDateTime) {
+    private List<Journey> getAllJourneysAfterOrEqualLocalDateTime(
+            List<Journey> journeys,
+            LocalDateTime referenceDateTime) {
         List<Journey> filteredJourneys = new ArrayList<>();
+
+        // bornes du jour
+        LocalDateTime startOfDay = referenceDateTime.toLocalDate().atStartOfDay();
+        LocalDateTime endOfDay = startOfDay.plusDays(1);
+
         for (Journey journey : journeys) {
-            long ts1 = journey.getDepartureLocalDateTime().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli();
-            long ts2 = LocalDateTime.atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli();
-            long diff = ts1 - ts2;
-            if (diff >= 0) {
+            LocalDateTime departure = journey.getDepartureLocalDateTime();
+            LocalDateTime arrival = journey.getArrivalLocalDateTime();
+
+            boolean afterReferenceTime = !departure.isBefore(referenceDateTime);
+            boolean departureSameDay = !departure.isBefore(startOfDay) && departure.isBefore(endOfDay);
+            boolean arrivalSameDay = !arrival.isBefore(startOfDay) && arrival.isBefore(endOfDay);
+
+            if (afterReferenceTime && departureSameDay && arrivalSameDay) {
                 filteredJourneys.add(journey);
             }
         }
+
         return filteredJourneys;
     }
 
