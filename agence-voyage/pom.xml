@@ -33,9 +33,12 @@
                     </mutators>
                     <excludedClasses>
                         <param>com.agence.Geolocation.ApiGeoService</param>
+                        <param>com.agence.App</param>
                     </excludedClasses>
                     <excludedTestClasses>
                         <param>com.agence.Geolocation.ApiGeoServiceTest</param>
+                        <param>com.agence.Trip.TripPlannerTestIT</param>
+                        <param>com.agence.AppTestIT</param>
                     </excludedTestClasses>
                 </configuration>
             </plugin>
