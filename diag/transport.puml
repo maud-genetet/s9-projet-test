@@ -1,63 +1,53 @@
 @startuml
 
-skinparam packageStyle rectangle
-skinparam interfaceStyle strict
-
 package "Transport" {
 
-    class Transport {
-        - cityFrom String
-        - cityTo String
-        - travelDate Date
-        - departureTime Time
-        - arrivalTime Time
-        - transportType TransportType
-    }
-
-    enum TransportType {
-        FLIGHT
+        enum JourneyType {
+        PLANE
         TRAIN
-        ANY
+        INDIFFERENT
     }
 
     enum TransportPriority {
-        CHEAPEST
-        SHORTEST_DURATION
-    }
-
-    class TransportService {
-        - transportRepository : ITransportRepository
-
-        + findTransport(criterias) : List<Transport>
-    }
-
-    interface ITransportRepository {
-        + getAllTransports() : List<Transport>
-    }
-
-    class TransportRepository implements ITransportRepository {
-        + TransportRepository(filePath: String)
-        + getAllTransports() : List<Transport> 
+        PRICE
+        DURATION
     }
 
     class Journey {
-        - steps : List<Transport>
+        - departureCity: String
+        - arrivalCity: String
+        - journeyType: JourneyType
+        - price: double
+        - departureLocalDateTime: LocalDateTime
+        - arrivalLocalDateTime: LocalDateTime
     }
 
-    class JourneyService {
-        - MAX_TRANSFERS : int = 3
 
-        + JourneyService(transportService: TransportService)
-        + findJourney(criterias) : List<Journey>
+
+    class Itinerary {
+        - journeys: ArrayList<Journey>
+    }
+
+    class ItineraryService {
+        + findBestItineraries(criterias): List<Itinerary>
+    }
+
+    interface IJourneyRepository {
+        + getAllJourney(): List<Journey>
+    }
+
+    class JourneyRepository implements IJourneyRepository {
+        + JourneyRepository(filePath: String)
+        + getAllJourney(): List<Journey>
     }
 }
 
-TransportService *-- ITransportRepository : injecté
-TransportRepository o-- Transport
-Transport ..> TransportType 
-JourneyService ..> Journey
-JourneyService ..> TransportPriority
-JourneyService *-- TransportService : injecté
-Journey ..> Transport
+ItineraryService *-- IJourneyRepository : injecté
+JourneyRepository o-- Journey
+Itinerary o-- Journey
+ItineraryService --> Itinerary
+ItineraryService --> TransportPriority
+ItineraryService --> JourneyType
+Journey --> JourneyType
 
 @enduml
