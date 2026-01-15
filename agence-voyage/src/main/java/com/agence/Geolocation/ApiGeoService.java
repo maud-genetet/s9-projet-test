@@ -17,7 +17,7 @@ public class ApiGeoService implements IGeoService {
     static final long REQUEST_INTERVAL_MS = 1000;
     private long lastRequestTime = 0;
 
-    ApiGeoService() {
+    public ApiGeoService() {
         Dotenv dotenv = Dotenv.load();
         apiKey = dotenv.get("GEO_API_KEY");
     }

@@ -10,5 +10,3 @@ public enum ActivityCategory {
     FOOD,
     ANY
 }
-
-
