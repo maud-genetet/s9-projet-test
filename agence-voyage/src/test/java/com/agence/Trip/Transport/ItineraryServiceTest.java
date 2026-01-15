@@ -2,6 +2,7 @@ package com.agence.Trip.Transport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -574,5 +575,188 @@ public class ItineraryServiceTest {
 
 		assertEquals(1, result.size());
 	}
+
+	@Test
+	void shouldNotKeepMoreExpensiveItineraryWhenCheaperFoundLater() {
+		Journey expensive = new Journey(
+				"Paris", "Nice", JourneyType.TRAIN, 200,
+				LocalDateTime.parse("2025-12-25 08:00:00", FORMATTER),
+				LocalDateTime.parse("2025-12-25 10:00:00", FORMATTER));
+
+		Journey cheap = new Journey(
+				"Paris", "Nice", JourneyType.TRAIN, 100,
+				LocalDateTime.parse("2025-12-25 09:00:00", FORMATTER),
+				LocalDateTime.parse("2025-12-25 11:00:00", FORMATTER));
+
+		// ORDRE IMPORTANT : cher d'abord
+		when(mockRepository.getAllJourney()).thenReturn(List.of(expensive, cheap));
+
+		List<Itinerary> result = itineraryService.findBestItineraries(
+				"Paris",
+				"Nice",
+				LocalDateTime.parse("2025-12-25 07:00:00", FORMATTER),
+				TransportPriority.PRICE,
+				JourneyType.INDIFFERENT,
+				500);
+
+		assertEquals(1, result.size());
+		assertEquals(100, result.get(0).getTotalPrice());
+	}
+
+	@Test
+	void shouldReallyCloneItineraries_WhenMultipleConnectionsExist() {
+		// Arrange
+		Journey paris2lyon = new Journey("Paris", "Lyon", JourneyType.TRAIN, 50,
+				LocalDateTime.parse("2025-12-25 08:00:00", FORMATTER),
+				LocalDateTime.parse("2025-12-25 10:00:00", FORMATTER));
+		Journey lyon2nice = new Journey("Lyon", "Nice", JourneyType.TRAIN, 80,
+				LocalDateTime.parse("2025-12-25 11:00:00", FORMATTER),
+				LocalDateTime.parse("2025-12-25 13:00:00", FORMATTER));
+		Journey paris2marseille = new Journey("Paris", "Marseille", JourneyType.PLANE, 80,
+				LocalDateTime.parse("2025-12-25 08:00:00", FORMATTER),
+				LocalDateTime.parse("2025-12-25 10:00:00", FORMATTER));
+		Journey marseille2nice = new Journey("Marseille", "Nice", JourneyType.PLANE, 50,
+				LocalDateTime.parse("2025-12-25 11:00:00", FORMATTER),
+				LocalDateTime.parse("2025-12-25 13:00:00", FORMATTER));
+
+		when(mockRepository.getAllJourney())
+				.thenReturn(List.of(paris2lyon, lyon2nice, paris2marseille, marseille2nice));
+
+		// Act
+		List<Itinerary> result = itineraryService.findBestItineraries(
+				"Paris", "Nice", TARGET_LocalDateTime, TransportPriority.PRICE,
+				JourneyType.INDIFFERENT, MAX_PRICE);
+
+		// Assert : on doit avoir plusieurs itinéraires distincts
+		assertEquals(2, result.size());
+
+		Itinerary itin1 = result.get(0);
+		Itinerary itin2 = result.get(1);
+
+		// Vérifier que ce sont **vraiment deux objets différents**
+		assertNotSame(itin1, itin2);
+
+		// Vérifier que le clone est indépendant : modifier l'un ne change pas l'autre
+		Journey extra = new Journey("Nice", "Cannes", JourneyType.TRAIN, 30,
+				LocalDateTime.parse("2025-12-25 14:00:00", FORMATTER),
+				LocalDateTime.parse("2025-12-25 15:00:00", FORMATTER));
+		itin1.addJourney(extra);
+
+		// L'autre itinéraire reste inchangé
+		assertEquals(130, itin2.getTotalPrice());
+		assertEquals(160, itin1.getTotalPrice()); // itin1 + extra
+	}
+
+
+	@Test
+	void shouldFilterJourneysBasedOnReferenceDateAndSameDay() {
+		// Arrange
+		LocalDateTime reference = LocalDateTime.parse("2025-12-25 10:00:00", FORMATTER);
+
+		Journey beforeReference = new Journey(
+			"Paris", "Lyon", JourneyType.TRAIN, 50,
+			LocalDateTime.parse("2025-12-25 09:00:00", FORMATTER),  // départ avant reference
+			LocalDateTime.parse("2025-12-25 11:00:00", FORMATTER)
+		);
+
+		Journey departurePreviousDay = new Journey(
+			"Paris", "Nice", JourneyType.TRAIN, 70,
+			LocalDateTime.parse("2025-12-24 12:00:00", FORMATTER),  // départ veille
+			LocalDateTime.parse("2025-12-24 14:00:00", FORMATTER)
+		);
+
+		Journey arrivalNextDay = new Journey(
+			"Paris", "Marseille", JourneyType.PLANE, 100,
+			LocalDateTime.parse("2025-12-25 15:00:00", FORMATTER),
+			LocalDateTime.parse("2025-12-26 01:00:00", FORMATTER)   // arrivée lendemain
+		);
+
+		Journey validJourney = new Journey(
+			"Paris", "Bordeaux", JourneyType.TRAIN, 80,
+			LocalDateTime.parse("2025-12-25 10:00:00", FORMATTER),
+			LocalDateTime.parse("2025-12-25 12:00:00", FORMATTER)
+		);
+
+		List<Journey> journeys = List.of(beforeReference, departurePreviousDay, arrivalNextDay, validJourney);
+
+		// Act
+		// On appelle la méthode privée via reflection pour tuer les mutants
+		List<Journey> filtered;
+		try {
+			java.lang.reflect.Method method = ItineraryService.class
+				.getDeclaredMethod("getAllJourneysAfterOrEqualLocalDateTime", List.class, LocalDateTime.class);
+			method.setAccessible(true);
+			filtered = (List<Journey>) method.invoke(itineraryService, journeys, reference);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
+		// Assert
+		assertEquals(1, filtered.size(), "Seul le journey valide doit passer le filtre");
+		assertEquals(validJourney, filtered.get(0));
+	}
+
+	@Test
+    public void shouldRejectJourneyArrivingExactlyAtMidnightNextDay() {
+        // Ce test tue les mutants sur: arrival.isBefore(endOfDay)
+        // Cas limite strict: Arrivée à 00:00:00 le jour suivant (doit être exclu)
+        
+        // Arrange
+        Journey midnightArrivalJourney = new Journey(CITY_PARIS, CITY_NICE, JourneyType.PLANE, 150.0,
+                LocalDateTime.parse("2025-12-25 22:00:00", FORMATTER),
+                LocalDateTime.parse("2025-12-26 00:00:00", FORMATTER)); // Arrivée pile à la borne exclue
+
+        when(mockRepository.getAllJourney()).thenReturn(List.of(midnightArrivalJourney));
+
+        // Act
+        List<Itinerary> result = itineraryService.findBestItineraries(
+                CITY_PARIS, CITY_NICE, TARGET_LocalDateTime, // 25 Déc
+                TransportPriority.PRICE, JourneyType.INDIFFERENT, MAX_PRICE);
+
+        // Assert
+        assertTrue(result.isEmpty(), "Le voyage arrivant pile à minuit le lendemain doit être exclu");
+    }
+
+    @Test
+    public void shouldRejectJourneySpanningOvernight() {
+        // Ce test tue les mutants sur l'opérateur "&&" ligne 94 et "arrivalSameDay"
+        // Le départ est bon (même jour), mais l'arrivée est le lendemain (hors bornes)
+        
+        // Arrange
+        Journey overnightJourney = new Journey(CITY_PARIS, CITY_NICE, JourneyType.PLANE, 150.0,
+                LocalDateTime.parse("2025-12-25 23:30:00", FORMATTER),
+                LocalDateTime.parse("2025-12-26 00:01:00", FORMATTER)); // Arrivée le lendemain
+
+        when(mockRepository.getAllJourney()).thenReturn(List.of(overnightJourney));
+
+        // Act
+        List<Itinerary> result = itineraryService.findBestItineraries(
+                CITY_PARIS, CITY_NICE, TARGET_LocalDateTime, 
+                TransportPriority.PRICE, JourneyType.INDIFFERENT, MAX_PRICE);
+
+        // Assert
+        assertTrue(result.isEmpty(), "Le voyage qui termine le jour suivant doit être exclu");
+    }
+
+    @Test
+    public void shouldRejectJourneyStartingExactlyAtMidnightNextDay() {
+        // Ce test tue les mutants sur: departure.isBefore(endOfDay)
+        // Départ pile à minuit le lendemain (doit être exclu même si c'est après referenceTime)
+        
+        // Arrange
+        Journey nextDayStartJourney = new Journey(CITY_PARIS, CITY_NICE, JourneyType.PLANE, 150.0,
+                LocalDateTime.parse("2025-12-26 00:00:00", FORMATTER), // Départ pile borne exclue
+                LocalDateTime.parse("2025-12-26 02:00:00", FORMATTER));
+
+        when(mockRepository.getAllJourney()).thenReturn(List.of(nextDayStartJourney));
+
+        // Act
+        List<Itinerary> result = itineraryService.findBestItineraries(
+                CITY_PARIS, CITY_NICE, TARGET_LocalDateTime, 
+                TransportPriority.PRICE, JourneyType.INDIFFERENT, MAX_PRICE);
+
+        // Assert
+        assertTrue(result.isEmpty(), "Le voyage commençant le jour suivant doit être exclu");
+    }
 
 }

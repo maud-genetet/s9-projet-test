@@ -3,7 +3,6 @@ package com.agence.Trip.Transport;
 import java.util.List;
 import java.util.ArrayList;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 public class ItineraryService {
 
@@ -79,19 +78,17 @@ public class ItineraryService {
             LocalDateTime referenceDateTime) {
         List<Journey> filteredJourneys = new ArrayList<>();
 
-        // bornes du jour
-        LocalDateTime startOfDay = referenceDateTime.toLocalDate().atStartOfDay();
-        LocalDateTime endOfDay = startOfDay.plusDays(1);
+        // Borne de fin (Minuit le lendemain)
+        LocalDateTime endOfDay = referenceDateTime.toLocalDate().atStartOfDay().plusDays(1);
 
         for (Journey journey : journeys) {
             LocalDateTime departure = journey.getDepartureLocalDateTime();
             LocalDateTime arrival = journey.getArrivalLocalDateTime();
 
             boolean afterReferenceTime = !departure.isBefore(referenceDateTime);
-            boolean departureSameDay = !departure.isBefore(startOfDay) && departure.isBefore(endOfDay);
-            boolean arrivalSameDay = !arrival.isBefore(startOfDay) && arrival.isBefore(endOfDay);
+            boolean arrivalBeforeMidnight = arrival.isBefore(endOfDay);
 
-            if (afterReferenceTime && departureSameDay && arrivalSameDay) {
+            if (afterReferenceTime && arrivalBeforeMidnight) {
                 filteredJourneys.add(journey);
             }
         }
@@ -168,5 +165,4 @@ public class ItineraryService {
         }
         return filteredItineraries;
     }
-
 }
