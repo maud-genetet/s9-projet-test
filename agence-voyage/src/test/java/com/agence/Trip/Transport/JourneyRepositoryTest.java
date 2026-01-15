@@ -148,4 +148,19 @@ public class JourneyRepositoryTest {
                     "Le prix doit être positif");
         }
     }
+
+    @Test
+    void testJourneyPriceIsFromCorrectCsvColumn() {
+        JourneyRepository repository = new JourneyRepository(testFilePath);
+
+        Journey journey = repository.getAllJourney().get(4); // Marseille → Nice
+
+        assertEquals(
+            45.00,
+            journey.getPrice(),
+            0.001,
+            "Le prix doit provenir exactement de la colonne data[3]"
+        );
+    }
+
 }
