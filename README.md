@@ -18,6 +18,12 @@ Créez un fichier `.env` à la racine du projet (copiez `.env.example`) et ajout
 mvn clean test
 ```
 
+### Tests d'Intégration
+
+```bash
+mvn clean integration-test
+```
+
 ### Rapport de Couverture (JaCoCo)
 
 ```bash

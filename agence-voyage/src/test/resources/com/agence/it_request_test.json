@@ -1,0 +1,13 @@
+{
+    "destinationCity": "Nice",
+    "cityFrom": "Paris",
+    "startDate": "2026-01-01",
+    "duration": 3,
+    "maxPrice": 2000.0,
+    "minHotelRating": 3,
+    "hotelPriority": "CHEAPEST",
+    "activityCategories": ["CULTURE"],
+    "maxDistance": 20.0,
+    "transportType": "PLANE",
+    "transportPriority": "PRICE"
+}

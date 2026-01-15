@@ -10,7 +10,7 @@ import java.util.List;
 public class ActivityRepository implements IActivityRepository {
     private List<Activity> allActivities;
 
-    ActivityRepository(String filePath) {
+    public ActivityRepository(String filePath) {
         this.allActivities = new ArrayList<>();
         String line;
         String separator = ",";
