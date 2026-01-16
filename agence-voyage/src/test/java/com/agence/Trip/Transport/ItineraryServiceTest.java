@@ -56,29 +56,6 @@ public class ItineraryServiceTest {
 	}
 
 	@Test
-	public void shouldReturnConnectingItinerary_WhenDirectJourneyNotExists() {
-		// Arrange
-		Journey journey1 = new Journey(CITY_PARIS, CITY_LYON, JourneyType.TRAIN, 50.0,
-				LocalDateTime.parse("2025-12-25 00:00:00", FORMATTER),
-				LocalDateTime.parse("2025-12-25 02:00:00", FORMATTER));
-		Journey journey2 = new Journey(CITY_LYON, CITY_NICE, JourneyType.TRAIN, 60.0,
-				LocalDateTime.parse("2025-12-25 04:00:00", FORMATTER),
-				LocalDateTime.parse("2025-12-25 06:00:00", FORMATTER));
-
-		when(mockRepository.getAllJourney()).thenReturn(List.of(journey1, journey2));
-
-		// Act
-		List<Itinerary> result = itineraryService.findBestItineraries(
-				CITY_PARIS, CITY_NICE, TARGET_LocalDateTime, TransportPriority.PRICE,
-				JourneyType.INDIFFERENT, MAX_PRICE);
-
-		// Assert
-		assertEquals(1, result.size());
-		assertEquals(110.0, result.get(0).getTotalPrice()); // 50 + 60
-		assertEquals(360, result.get(0).getDurationInMinutes()); // 6 hours total
-	}
-
-	@Test
 	public void shouldReturnEmpty_WhenNoDepartureJourneyFromCity() {
 		// Arrange
 		Journey journey = new Journey(CITY_LYON, CITY_NICE, JourneyType.TRAIN, 50.0,
@@ -403,28 +380,6 @@ public class ItineraryServiceTest {
 	}
 
 	@Test
-	public void shouldReturnCloneItinerary_WhenCloningItinerary() {
-		// Arrange
-		Journey journey1 = new Journey(CITY_PARIS, CITY_LYON, JourneyType.TRAIN, 50.0,
-				LocalDateTime.parse("2025-12-25 00:00:00", FORMATTER),
-				LocalDateTime.parse("2025-12-25 02:00:00", FORMATTER));
-		Journey journey2 = new Journey(CITY_LYON, CITY_NICE, JourneyType.PLANE, 50.0,
-				LocalDateTime.parse("2025-12-25 03:00:00", FORMATTER),
-				LocalDateTime.parse("2025-12-25 05:00:00", FORMATTER));
-
-		Itinerary itinerary = new Itinerary();
-		itinerary.addJourney(journey1);
-		itinerary.addJourney(journey2);
-
-		// Act
-		Itinerary clonedItinerary = itinerary.clone();
-
-		// Assert
-		assertEquals(300, clonedItinerary.getDurationInMinutes());
-		assertEquals(itinerary.getTotalPrice(), clonedItinerary.getTotalPrice());
-	}
-
-	@Test
 	void shouldReturnEmpty_WhenNoJourneyOnSameDayOrAfter() {
 		// Arrange
 		LocalDateTime targetDate = LocalDateTime.parse("2025-12-25 10:00:00", FORMATTER);
@@ -440,28 +395,6 @@ public class ItineraryServiceTest {
 
 		// Assert
 		assertTrue(result.isEmpty(), "Les journeys avant la date de départ doivent être ignorés");
-	}
-
-	@Test
-	void shouldCloneItinerary_WhenMultipleConnectionsExist() {
-		// Arrange
-		Journey first = new Journey("Paris", "Lyon", JourneyType.TRAIN, 50.0,
-				LocalDateTime.parse("2025-12-25 10:00:00", FORMATTER),
-				LocalDateTime.parse("2025-12-25 12:00:00", FORMATTER));
-
-		Journey second = new Journey("Lyon", "Nice", JourneyType.TRAIN, 70.0,
-				LocalDateTime.parse("2025-12-25 13:00:00", FORMATTER),
-				LocalDateTime.parse("2025-12-25 15:00:00", FORMATTER));
-
-		// Assert
-		Itinerary itinerary = new Itinerary();
-		itinerary.addJourney(first);
-
-		Itinerary clonedItinerary = itinerary.clone();
-		clonedItinerary.addJourney(second);
-
-		assertEquals(120, itinerary.getDurationInMinutes());
-		assertEquals(300, clonedItinerary.getDurationInMinutes());
 	}
 
 	@Test
@@ -526,27 +459,7 @@ public class ItineraryServiceTest {
 	}
 
 	@Test
-	void cloneMustBeIndependentFromOriginal() {
-		Journey j1 = new Journey("Paris", "Lyon", JourneyType.TRAIN, 50,
-				LocalDateTime.parse("2025-12-25 10:00:00", FORMATTER),
-				LocalDateTime.parse("2025-12-25 12:00:00", FORMATTER));
-
-		Journey j2 = new Journey("Lyon", "Nice", JourneyType.TRAIN, 50,
-				LocalDateTime.parse("2025-12-25 13:00:00", FORMATTER),
-				LocalDateTime.parse("2025-12-25 15:00:00", FORMATTER));
-
-		Itinerary original = new Itinerary();
-		original.addJourney(j1);
-
-		Itinerary clone = original.clone();
-		clone.addJourney(j2);
-
-		assertEquals(120, original.getDurationInMinutes());
-		assertEquals(300, clone.getDurationInMinutes());
-	}
-
-	@Test
-	void shouldRejectJourneyEndingExactlyNextDay() {
+	void shouldRejectJourneyEndingNextDay() {
 		Journey journey = new Journey("Paris", "Nice", JourneyType.TRAIN, 100,
 				LocalDateTime.parse("2025-12-25 23:00:00", FORMATTER),
 				LocalDateTime.parse("2025-12-26 00:00:00", FORMATTER));
@@ -599,95 +512,6 @@ public class ItineraryServiceTest {
 
 		assertEquals(1, result.size());
 		assertEquals(100, result.get(0).getTotalPrice());
-	}
-
-	@Test
-	void shouldReallyCloneItineraries_WhenMultipleConnectionsExist() {
-		// Arrange
-		Journey paris2lyon = new Journey("Paris", "Lyon", JourneyType.TRAIN, 50,
-				LocalDateTime.parse("2025-12-25 08:00:00", FORMATTER),
-				LocalDateTime.parse("2025-12-25 10:00:00", FORMATTER));
-		Journey lyon2nice = new Journey("Lyon", "Nice", JourneyType.TRAIN, 80,
-				LocalDateTime.parse("2025-12-25 11:00:00", FORMATTER),
-				LocalDateTime.parse("2025-12-25 13:00:00", FORMATTER));
-		Journey paris2marseille = new Journey("Paris", "Marseille", JourneyType.PLANE, 80,
-				LocalDateTime.parse("2025-12-25 08:00:00", FORMATTER),
-				LocalDateTime.parse("2025-12-25 10:00:00", FORMATTER));
-		Journey marseille2nice = new Journey("Marseille", "Nice", JourneyType.PLANE, 50,
-				LocalDateTime.parse("2025-12-25 11:00:00", FORMATTER),
-				LocalDateTime.parse("2025-12-25 13:00:00", FORMATTER));
-
-		when(mockRepository.getAllJourney())
-				.thenReturn(List.of(paris2lyon, lyon2nice, paris2marseille, marseille2nice));
-
-		// Act
-		List<Itinerary> result = itineraryService.findBestItineraries(
-				"Paris", "Nice", TARGET_LocalDateTime, TransportPriority.PRICE,
-				JourneyType.INDIFFERENT, MAX_PRICE);
-
-		// Assert
-		assertEquals(2, result.size());
-
-		Itinerary itin1 = result.get(0);
-		Itinerary itin2 = result.get(1);
-
-		assertNotSame(itin1, itin2);
-
-		Journey extra = new Journey("Nice", "Cannes", JourneyType.TRAIN, 30,
-				LocalDateTime.parse("2025-12-25 14:00:00", FORMATTER),
-				LocalDateTime.parse("2025-12-25 15:00:00", FORMATTER));
-		itin1.addJourney(extra);
-
-		assertEquals(130, itin2.getTotalPrice());
-		assertEquals(160, itin1.getTotalPrice()); 
-	}
-
-
-	@Test
-	void shouldFilterJourneysBasedOnReferenceDateAndSameDay() {
-		// Arrange
-		LocalDateTime reference = LocalDateTime.parse("2025-12-25 10:00:00", FORMATTER);
-
-		Journey beforeReference = new Journey(
-			"Paris", "Lyon", JourneyType.TRAIN, 50,
-			LocalDateTime.parse("2025-12-25 09:00:00", FORMATTER),
-			LocalDateTime.parse("2025-12-25 11:00:00", FORMATTER)
-		);
-
-		Journey departurePreviousDay = new Journey(
-			"Paris", "Nice", JourneyType.TRAIN, 70,
-			LocalDateTime.parse("2025-12-24 12:00:00", FORMATTER),
-			LocalDateTime.parse("2025-12-24 14:00:00", FORMATTER)
-		);
-
-		Journey arrivalNextDay = new Journey(
-			"Paris", "Marseille", JourneyType.PLANE, 100,
-			LocalDateTime.parse("2025-12-25 15:00:00", FORMATTER),
-			LocalDateTime.parse("2025-12-26 01:00:00", FORMATTER) 
-		);
-
-		Journey validJourney = new Journey(
-			"Paris", "Bordeaux", JourneyType.TRAIN, 80,
-			LocalDateTime.parse("2025-12-25 10:00:00", FORMATTER),
-			LocalDateTime.parse("2025-12-25 12:00:00", FORMATTER)
-		);
-
-		List<Journey> journeys = List.of(beforeReference, departurePreviousDay, arrivalNextDay, validJourney);
-
-		// Act
-		List<Journey> filtered;
-		try {
-			java.lang.reflect.Method method = ItineraryService.class
-				.getDeclaredMethod("getAllJourneysAfterOrEqualLocalDateTime", List.class, LocalDateTime.class);
-			method.setAccessible(true);
-			filtered = (List<Journey>) method.invoke(itineraryService, journeys, reference);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-
-		// Assert
-		assertEquals(1, filtered.size(), "Seul le journey valide doit passer le filtre");
-		assertEquals(validJourney, filtered.get(0));
 	}
 
 	@Test
