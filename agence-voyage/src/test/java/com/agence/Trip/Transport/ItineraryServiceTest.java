@@ -234,7 +234,7 @@ public class ItineraryServiceTest {
 	@Test
 	public void shouldReturnMultipleItineraries_WhenMultiplePossibleConnections() {
 		// Arrange
-		// Paris -> Lyon et Paris -> Marseille (départs)
+		// Paris -> Lyon et Paris -> Marseille 
 		Journey paris2lyon = new Journey(CITY_PARIS, CITY_LYON, JourneyType.TRAIN, 50.0,
 				LocalDateTime.parse("2025-12-25 00:00:00", FORMATTER),
 				LocalDateTime.parse("2025-12-25 02:00:00", FORMATTER));
@@ -625,7 +625,7 @@ public class ItineraryServiceTest {
 				"Paris", "Nice", TARGET_LocalDateTime, TransportPriority.PRICE,
 				JourneyType.INDIFFERENT, MAX_PRICE);
 
-		// Assert : on doit avoir plusieurs itinéraires distincts
+		// Assert
 		assertEquals(2, result.size());
 
 		Itinerary itin1 = result.get(0);
@@ -701,7 +701,7 @@ public class ItineraryServiceTest {
 
         // Act
         List<Itinerary> result = itineraryService.findBestItineraries(
-                CITY_PARIS, CITY_NICE, TARGET_LocalDateTime, // 25 Déc
+                CITY_PARIS, CITY_NICE, TARGET_LocalDateTime, 
                 TransportPriority.PRICE, JourneyType.INDIFFERENT, MAX_PRICE);
 
         // Assert
@@ -713,8 +713,7 @@ public class ItineraryServiceTest {
         // Arrange
         Journey overnightJourney = new Journey(CITY_PARIS, CITY_NICE, JourneyType.PLANE, 150.0,
                 LocalDateTime.parse("2025-12-25 23:30:00", FORMATTER),
-                LocalDateTime.parse("2025-12-26 00:01:00", FORMATTER)); // Arrivée le lendemain
-
+                LocalDateTime.parse("2025-12-26 00:01:00", FORMATTER)); 
         when(mockRepository.getAllJourney()).thenReturn(List.of(overnightJourney));
 
         // Act
@@ -730,7 +729,7 @@ public class ItineraryServiceTest {
     public void shouldRejectJourneyStartingExactlyAtMidnightNextDay() {
         // Arrange
         Journey nextDayStartJourney = new Journey(CITY_PARIS, CITY_NICE, JourneyType.PLANE, 150.0,
-                LocalDateTime.parse("2025-12-26 00:00:00", FORMATTER), // Départ pile borne exclue
+                LocalDateTime.parse("2025-12-26 00:00:00", FORMATTER), 
                 LocalDateTime.parse("2025-12-26 02:00:00", FORMATTER));
 
         when(mockRepository.getAllJourney()).thenReturn(List.of(nextDayStartJourney));
@@ -775,7 +774,7 @@ public class ItineraryServiceTest {
 				JourneyType.INDIFFERENT, MAX_PRICE);
 
 		// Assert
-		assertEquals(2, result.size()); // Deux itinéraires possibles
+		assertEquals(2, result.size()); 
 		assertNotSame( result.get(0),  result.get(1));
 	}
 

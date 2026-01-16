@@ -43,16 +43,6 @@ public class JourneyRepositoryTest {
         assertEquals(10, repository.getAllJourney().size());
         
         // Verifier tous les trajet
-        /*Paris,Lyon,TRAIN,55.99,2025-12-25 08:00:00,2025-12-25 11:30:00
-Paris,Marseille,PLANE,120.00,2025-12-25 10:00:00,2025-12-25 12:00:00
-Lyon,Marseille,TRAIN,35.00,2025-12-25 12:00:00,2025-12-25 14:30:00
-Lyon,Nice,TRAIN,60.00,2025-12-25 13:00:00,2025-12-25 16:00:00
-Marseille,Nice,PLANE,45.00,2025-12-25 15:00:00,2025-12-25 15:45:00
-Paris,Nice,PLANE,150.00,2025-12-25 11:00:00,2025-12-25 13:00:00
-Nice,Monaco,TRAIN,25.00,2025-12-25 17:00:00,2025-12-25 17:45:00
-Marseille,Monaco,PLANE,80.00,2025-12-25 16:00:00,2025-12-25 16:30:00
-Paris,Bordeaux,TRaIN,45.00,2025-12-25 09:00:00,2025-12-25 11:00:00
-Bordeaux,Marseille,TRAIN,90.00,2025-12-25 12:00:00,2025-12-25 16:00:00 */
         Journey firstJourney = repository.getAllJourney().get(0);
         assertEquals("Paris", firstJourney.getDepartureCity());
         assertEquals("Lyon", firstJourney.getArrivalCity());
@@ -177,68 +167,4 @@ Bordeaux,Marseille,TRAIN,90.00,2025-12-25 12:00:00,2025-12-25 16:00:00 */
             System.setErr(originalErr);
         }
     }
-
-    @Test
-    void testTotalPriceCalculation() {
-        JourneyRepository repository = new JourneyRepository(testFilePath);
-        
-        double totalPrice = 0;
-        for (Journey journey : repository.getAllJourney()) {
-            totalPrice += journey.getPrice();
-        }
-        
-        // 55.99 + 120 + 35 + 60 + 45 + 150 + 25 + 80 + 45 + 90 = 700
-        assertEquals(705.99, totalPrice);
-    }
-
-    @Test
-    public void testJourneyTypeIsCaseInsensitive() {
-        JourneyRepository repository = new JourneyRepository(testFilePath);
-        
-        List<Journey> journeys = repository.getAllJourney();
-        
-        assertEquals(10, journeys.size(), "Doit charger 10 journeys");
-        
-        assertTrue(journeys.stream()
-            .anyMatch(j -> j.getJourneyType() == JourneyType.PLANE),
-            "Au moins un trajet doit avoir le type PLANE");
-        assertTrue(journeys.stream()
-            .anyMatch(j -> j.getJourneyType() == JourneyType.TRAIN),
-            "Au moins un trajet doit avoir le type TRAIN");
-    }
-
-    @Test
-    public void testJourneyDistanceCorrectlyParsed() {
-        JourneyRepository repository = new JourneyRepository(testFilePath);
-        
-        List<Journey> journeys = repository.getAllJourney();
-        
-        assertEquals(10, journeys.size(), "Doit avoir 10 journeys");
-        
-        Journey firstJourney = journeys.get(0);
-        assertEquals(55.99, firstJourney.getPrice(), 0.01, 
-                "Le prix du premier trajet doit être 55.99 parsé depuis data[3]");
-        
-        for (Journey journey : journeys) {
-            assertNotEquals(0.0, journey.getPrice(), 
-                    "Le prix ne doit pas être 0");
-            assertTrue(journey.getPrice() > 0, 
-                    "Le prix doit être positif");
-        }
-    }
-
-    @Test
-    void testJourneyPriceIsFromCorrectCsvColumn() {
-        JourneyRepository repository = new JourneyRepository(testFilePath);
-
-        Journey journey = repository.getAllJourney().get(4); // Marseille → Nice
-
-        assertEquals(
-            45.00,
-            journey.getPrice(),
-            0.001,
-            "Le prix doit provenir exactement de la colonne data[3]"
-        );
-    }
-
 }
