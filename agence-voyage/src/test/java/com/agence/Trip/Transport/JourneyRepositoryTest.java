@@ -42,18 +42,96 @@ public class JourneyRepositoryTest {
         // Vérifier que tous les trajets sont chargés correctement
         assertEquals(10, repository.getAllJourney().size());
         
-        // Vérifier quelques trajets spécifiques
+        // Verifier tous les trajet
+        /*Paris,Lyon,TRAIN,55.99,2025-12-25 08:00:00,2025-12-25 11:30:00
+Paris,Marseille,PLANE,120.00,2025-12-25 10:00:00,2025-12-25 12:00:00
+Lyon,Marseille,TRAIN,35.00,2025-12-25 12:00:00,2025-12-25 14:30:00
+Lyon,Nice,TRAIN,60.00,2025-12-25 13:00:00,2025-12-25 16:00:00
+Marseille,Nice,PLANE,45.00,2025-12-25 15:00:00,2025-12-25 15:45:00
+Paris,Nice,PLANE,150.00,2025-12-25 11:00:00,2025-12-25 13:00:00
+Nice,Monaco,TRAIN,25.00,2025-12-25 17:00:00,2025-12-25 17:45:00
+Marseille,Monaco,PLANE,80.00,2025-12-25 16:00:00,2025-12-25 16:30:00
+Paris,Bordeaux,TRaIN,45.00,2025-12-25 09:00:00,2025-12-25 11:00:00
+Bordeaux,Marseille,TRAIN,90.00,2025-12-25 12:00:00,2025-12-25 16:00:00 */
+        Journey firstJourney = repository.getAllJourney().get(0);
+        assertEquals("Paris", firstJourney.getDepartureCity());
+        assertEquals("Lyon", firstJourney.getArrivalCity());
+        assertEquals(JourneyType.TRAIN, firstJourney.getJourneyType());
+        assertEquals(55.99, firstJourney.getPrice());
+        assertEquals("2025-12-25 08:00", firstJourney.getDepartureLocalDateTime().toString().replace('T', ' '));
+        assertEquals("2025-12-25 11:30", firstJourney.getArrivalLocalDateTime().toString().replace('T', ' '));
+
         Journey secondJourney = repository.getAllJourney().get(1);
         assertEquals("Paris", secondJourney.getDepartureCity());
         assertEquals("Marseille", secondJourney.getArrivalCity());
         assertEquals(JourneyType.PLANE, secondJourney.getJourneyType());
         assertEquals(120.00, secondJourney.getPrice());
+        assertEquals("2025-12-25 10:00", secondJourney.getDepartureLocalDateTime().toString().replace('T', ' '));
+        assertEquals("2025-12-25 12:00", secondJourney.getArrivalLocalDateTime().toString().replace('T', ' '));
+
+        Journey thirdJourney = repository.getAllJourney().get(2);
+        assertEquals("Lyon", thirdJourney.getDepartureCity());
+        assertEquals("Marseille", thirdJourney.getArrivalCity());
+        assertEquals(JourneyType.TRAIN, thirdJourney.getJourneyType());
+        assertEquals(35.00, thirdJourney.getPrice());
+        assertEquals("2025-12-25 12:00", thirdJourney.getDepartureLocalDateTime().toString().replace('T', ' '));
+        assertEquals("2025-12-25 14:30", thirdJourney.getArrivalLocalDateTime().toString().replace('T', ' '));
+
+        Journey fourthJourney = repository.getAllJourney().get(3);
+        assertEquals("Lyon", fourthJourney.getDepartureCity());
+        assertEquals("Nice", fourthJourney.getArrivalCity());
+        assertEquals(JourneyType.TRAIN, fourthJourney.getJourneyType());
+        assertEquals(60.00, fourthJourney.getPrice());
+        assertEquals("2025-12-25 13:00", fourthJourney.getDepartureLocalDateTime().toString().replace('T', ' '));
+        assertEquals("2025-12-25 16:00", fourthJourney.getArrivalLocalDateTime().toString().replace('T', ' '));  
+
+        Journey fifthJourney = repository.getAllJourney().get(4);
+        assertEquals("Marseille", fifthJourney.getDepartureCity());
+        assertEquals("Nice", fifthJourney.getArrivalCity());
+        assertEquals(JourneyType.PLANE, fifthJourney.getJourneyType());
+        assertEquals(45.00, fifthJourney.getPrice());
+        assertEquals("2025-12-25 15:00", fifthJourney.getDepartureLocalDateTime().toString().replace('T', ' '));
+        assertEquals("2025-12-25 15:45", fifthJourney.getArrivalLocalDateTime().toString().replace('T', ' '));
+
+        Journey sixthJourney = repository.getAllJourney().get(5);
+        assertEquals("Paris", sixthJourney.getDepartureCity());
+        assertEquals("Nice", sixthJourney.getArrivalCity());
+        assertEquals(JourneyType.PLANE, sixthJourney.getJourneyType());
+        assertEquals(150.00, sixthJourney.getPrice());
+        assertEquals("2025-12-25 11:00", sixthJourney.getDepartureLocalDateTime().toString().replace('T', ' '));
+        assertEquals("2025-12-25 13:00", sixthJourney.getArrivalLocalDateTime().toString().replace('T', ' '));
+
+        Journey seventhJourney = repository.getAllJourney().get(6);
+        assertEquals("Nice", seventhJourney.getDepartureCity());
+        assertEquals("Monaco", seventhJourney.getArrivalCity());
+        assertEquals(JourneyType.TRAIN, seventhJourney.getJourneyType());
+        assertEquals(25.00, seventhJourney.getPrice());
+        assertEquals("2025-12-25 17:00", seventhJourney.getDepartureLocalDateTime().toString().replace('T', ' '));
+        assertEquals("2025-12-25 17:45", seventhJourney.getArrivalLocalDateTime().toString().replace('T', ' '));
+
+        Journey eighthJourney = repository.getAllJourney().get(7);
+        assertEquals("Marseille", eighthJourney.getDepartureCity());
+        assertEquals("Monaco", eighthJourney.getArrivalCity());
+        assertEquals(JourneyType.PLANE, eighthJourney.getJourneyType());
+        assertEquals(80.00, eighthJourney.getPrice());
+        assertEquals("2025-12-25 16:00", eighthJourney.getDepartureLocalDateTime().toString().replace('T', ' '));
+        assertEquals("2025-12-25 16:30", eighthJourney.getArrivalLocalDateTime().toString().replace('T', ' '));
+
+        Journey ninthJourney = repository.getAllJourney().get(8);
+        assertEquals("Paris", ninthJourney.getDepartureCity());
+        assertEquals("Bordeaux", ninthJourney.getArrivalCity());
+        assertEquals(JourneyType.TRAIN, ninthJourney.getJourneyType());
+        assertEquals(45.00, ninthJourney.getPrice());   
+        assertEquals("2025-12-25 09:00", ninthJourney.getDepartureLocalDateTime().toString().replace('T', ' '));
+        assertEquals("2025-12-25 11:00", ninthJourney.getArrivalLocalDateTime().toString().replace('T', ' '));
         
         Journey lastJourney = repository.getAllJourney().get(9);
         assertEquals("Bordeaux", lastJourney.getDepartureCity());
         assertEquals("Marseille", lastJourney.getArrivalCity());
         assertEquals(JourneyType.TRAIN, lastJourney.getJourneyType());
         assertEquals(90.00, lastJourney.getPrice());
+        assertEquals("2025-12-25 12:00", lastJourney.getDepartureLocalDateTime().toString().replace('T', ' '));
+        assertEquals("2025-12-25 16:00", lastJourney.getArrivalLocalDateTime().toString().replace('T', ' '));
     }
 
     @Test
